@@ -17,6 +17,16 @@
     fetchSections(getCurrentArticleCategories(), showCategorySections);
 
     /**
+     * Return normalized title for text
+     * Useful for normalizing categories and sections.
+     * @param {string} text
+     * @returns {string} normalized text
+     */
+    function getNormalizedTitle(text) {
+        return mw.Title.newFromText(text).title;
+    }
+
+    /**
      * Fetch sections of the current article
      * @return {Set} normalized article sections
      *
@@ -27,7 +37,7 @@
         var headlines = $('.mw-headline');
 
         return new Set($.map(headlines, function(headline) {
-            return mw.Title.newFromText($(headline).text()).title;
+            return getNormalizedTitle($(headline).text());
         }));
     }
 
@@ -37,7 +47,7 @@
      */
     function getCurrentArticleCategories() {
         return $.map(mw.config.get('wgCategories'), function(category) {
-            return mw.Title.newFromText(category).title;
+            return getNormalizedTitle(category);
         });
     }
 
@@ -58,15 +68,16 @@
         $.when.apply($, requests).then(function() {
             Array.from(arguments).forEach(function(response) {
                 response[0].forEach(function(apiSection) {
+                    var section = getNormalizedTitle(apiSection[0]);
                     // Only consider sections that are missing from the
                     // current article.
-                    if (currentArticleSections.has(apiSection[0])) {
+                    if (currentArticleSections.has(section)) {
                         return;
                     }
-                    if (apiSection[0] in sections) {
-                        sections[apiSection[0]] =+ apiSection[1];
+                    if (section in sections) {
+                        sections[section] =+ apiSection[1];
                     } else {
-                        sections[apiSection[0]] = apiSection[1];
+                        sections[section] = apiSection[1];
                     }
                 });
             });
