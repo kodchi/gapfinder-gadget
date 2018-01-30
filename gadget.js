@@ -26,6 +26,10 @@
         return mw.Title.newFromText(text).title;
     }
 
+    function getNormalizedText(title) {
+        return mw.Title.newFromText(title).getMainText();
+    }
+
     /**
      * Fetch sections of the current article
      * @return {Set} normalized article sections
@@ -104,7 +108,7 @@
         // scores and use that color as the section background color.
         $('<ul></ul>').append(
             $.map(sections, function (section) {
-                return '<li>' + section[0] + '</li>';
+                return '<li>' + getNormalizedText(section[0]) + '</li>';
             })
         ).insertAfter('#firstHeading');
     }
