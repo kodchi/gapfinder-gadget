@@ -3,7 +3,7 @@
  * recommendations.
  */
 (function(d, $, mw, ve) {
-    var API_BASE_URL = 'http://gapfinder.wmflabs.org/en.wikipedia.org/v1/section/category/',
+    var API_BASE_URL = 'http://gapfinder.wmflabs.org/en.wikipedia.org/v1/section/article/',
         // # of recommendations to show
         MAX_RECOMMENDATION_COUNT = 5,
         $recommendationsPlaceholder;
@@ -25,15 +25,11 @@
      */
     function showSectionRecommendations() {
         var title = mw.config.get('wgPageName');
-        getCategories(title)
-            .done(function (categories) {
-                if (categories) {
-                    $.when(getSectionRecommendations(categories),
-                           getSections(title))
-                        .then(getMissingSections)
-                        .then(showTopMissingSections);
-                }
-            });
+
+        $.when(getSectionRecommendations(title),
+               getSections(title))
+            .then(getMissingSections)
+            .then(showTopMissingSections);
     }
 
     /**
@@ -73,13 +69,11 @@
      */
     function getMissingSections (sectionRecommendations, articleSections) {
         var result = [];
-
-        $.each(sectionRecommendations, function(name, score) {
-            if ($.inArray(name, articleSections) === -1) {
-                result.push([name, score]);
+        $.each(sectionRecommendations, function(i, section) {
+            if ($.inArray(section[0], articleSections) === -1) {
+                result.push(section);
             }
         });
-
         result.sort(function(a, b) {
             return b[1] - a[1];
         });
@@ -124,7 +118,7 @@
             .then(function(data) {
                 if (data && data.parse && data.parse.sections) {
                     return $.map(data.parse.sections, function(section) {
-                        return getNormalizedTitle(section.line);
+                        return section.line;
                     });
                 }
                 return false;
@@ -132,54 +126,16 @@
     }
 
     /**
-     * Get categories for title
-     * @param {string} title article title
-     * @return {jQuery.Promise}
-     * @return {Function} return.done
-     * @return {string[]|false} return.done.data normalized category
-     * names or false
-     */
-    function getCategories(title) {
-        return mw.loader.using('mediawiki.api.category').then(function () {
-            return new mw.Api().getCategories(title)
-                .then(function (categories) {
-                    if (categories) {
-                        return $.map(categories, function(category) {
-                            return getNormalizedTitle(category.title);
-                        });
-                    }
-                    return false;
-                });
-        });
-    }
-
-    /**
-     * Get section recommendations for categories
+     * Get section recommendations for article
      * @param {string[]} categories
      * @return {jQuery.Promise}
      * @return {Function} return.done
      * @return {Object|false} return.done.data normalized section
      * names and their relevance scores as key value pairs or false
      */
-    function getSectionRecommendations(categories) {
-        var section,
-            sections = {},
-            requests = $.map(categories, function(category) {
-                return $.getJSON(API_BASE_URL + category);
-            });
-
-        return $.when.apply($, requests).then(function() {
-            Array.from(arguments).forEach(function(response) {
-                response[0].forEach(function(apiSection) {
-                    section = getNormalizedTitle(apiSection[0]);
-                    if (section in sections) {
-                        sections[section] =+ apiSection[1];
-                    } else {
-                        sections[section] = apiSection[1];
-                    }
-                });
-            });
-            return sections;
+    function getSectionRecommendations(title) {
+        return $.getJSON(API_BASE_URL + title).then(function(response) {
+            return response;
         });
     }
 
