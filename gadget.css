@@ -1,0 +1,34 @@
+.ve-init-mw-desktopArticleTarget-originalContent,
+.wikiEditor-ui,
+#gapfinder {
+    display: inline-block;
+    vertical-align: top;
+}
+
+.ve-init-mw-desktopArticleTarget-originalContent,
+.wikiEditor-ui {
+    width: 75% !important;
+}
+#gapfinder {
+    background-color: #F8F9FA;
+    padding-top: 2em;
+    width: 25%;
+}
+.ve-init-target-visual #gapfinder {
+    margin-right: -1.5em;
+    margin-top: -1.5em;
+    float: right;
+}
+
+#gapfinder > * {
+    padding-left: 10px;
+}
+
+#gapfinder ol {
+    margin: 0;
+    list-style: none;
+}
+
+#gapfinder ol li {
+    padding-top: 1em;
+}

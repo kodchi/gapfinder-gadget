@@ -6,7 +6,8 @@
     var API_BASE_URL = 'http://gapfinder.wmflabs.org/en.wikipedia.org/v1/section/article/',
         // # of recommendations to show
         MAX_RECOMMENDATION_COUNT = 5,
-        $recommendationsPlaceholder;
+        recommendationPlaceholderId = 'gapfinder',
+        anchor;
 
     // Must be the Main namespace
     if (mw.config.get('wgNamespaceNumber') !== 0) {
@@ -14,10 +15,19 @@
     }
 
     if (mw.config.get('wgAction') === 'edit') {
+        anchor = '.wikiEditor-ui';
         showSectionRecommendations();
-    } else if (ve) {
-        ve.trackSubscribe('mwedit.loaded', showSectionRecommendations);
+    }
+
+    if (ve) {
+        ve.trackSubscribe('mwedit.loaded', onVELoaded);
+    }
+
+    function onVELoaded() {
+        anchor = '.ve-init-mw-desktopArticleTarget-originalContent';
+        showSectionRecommendations();
         ve.trackSubscribe('mwedit.abort', hideSectionRecommendations);
+        ve.trackSubscribe('mwedit.saveSuccess', hideSectionRecommendations);
     }
 
     /**
@@ -36,7 +46,7 @@
      * Remove section recommendations from the page
      */
     function hideSectionRecommendations() {
-        $recommendationsPlaceholder.remove();
+        $('#' + recommendationPlaceholderId).remove();
     }
 
     /**
@@ -45,10 +55,11 @@
      * names and their relevance scores
      */
     function showTopMissingSections(sections) {
-        var $recommendationsPlaceholder =  $('<div id="gapfinder" class="mw-body">'),
-            topSections = sections.slice(0, MAX_RECOMMENDATION_COUNT);
+        var $recommendationsPlaceholder =  $('<div id="' + recommendationPlaceholderId + '">'),
+            topSections = sections.slice(0, MAX_RECOMMENDATION_COUNT),
+            anchorHeight = $(anchor).height() + 'px';
 
-        $('<p>Here are the most relevant sections that are missing from the article you are editing. Feel free to create them.</p>')
+        $('<b>Sections you can add</b>')
             .appendTo($recommendationsPlaceholder);
 
         $('<ol></ol>').append(
@@ -57,7 +68,9 @@
             })
         ).appendTo($recommendationsPlaceholder);
 
-        $recommendationsPlaceholder.insertBefore('#content');
+        $recommendationsPlaceholder
+            .css('height', anchorHeight)
+            .insertAfter(anchor);
     }
 
 
