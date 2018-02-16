@@ -34,10 +34,33 @@
      * Fetch and show missing section recommendations before the edit area.
      */
     function showSectionRecommendations() {
-        var title = mw.config.get('wgPageName');
+        var title = mw.config.get('wgPageName'),
+            $recommendationsPlaceholder =  $('<div id="' + recommendationPlaceholderId + '">'),
+            anchorHeight = $(anchor).height() + 'px';
 
-        getSectionRecommendations(title)
-            .then(showTopMissingSections);
+        $.getJSON(API_BASE_URL + title)
+            .then(function(sections) {
+                if (!sections.length) {
+                    return;
+                }
+
+                let topSections = sections.slice(0, MAX_RECOMMENDATION_COUNT);
+
+                $('<b>Sections you can add</b>')
+                    .appendTo($recommendationsPlaceholder);
+
+                // TODO: only show if more than 0 top sections
+                $('<ol></ol>').append(
+                    $.map(topSections, function (section) {
+                        return '<li>' + section[0] + '</li>';
+                    })
+                ).appendTo($recommendationsPlaceholder);
+
+                $recommendationsPlaceholder
+                // TODO: do this in CSS
+                    .css('height', anchorHeight)
+                    .insertAfter(anchor);
+            });
     }
 
     /**
@@ -46,64 +69,4 @@
     function hideSectionRecommendations() {
         $('#' + recommendationPlaceholderId).remove();
     }
-
-    /**
-     * Show top missing sections
-     * @param {Array<Array<string, number>>} sections Array of section
-     * names and their relevance scores
-     */
-    function showTopMissingSections(sections) {
-        var $recommendationsPlaceholder =  $('<div id="' + recommendationPlaceholderId + '">'),
-            topSections = sections.slice(0, MAX_RECOMMENDATION_COUNT),
-            anchorHeight = $(anchor).height() + 'px';
-
-        $('<b>Sections you can add</b>')
-            .appendTo($recommendationsPlaceholder);
-
-        // TODO: only show if more than 0 top sections
-        $('<ol></ol>').append(
-            $.map(topSections, function (section) {
-                return '<li>' + getNormalizedText(section[0]) + '</li>';
-            })
-        ).appendTo($recommendationsPlaceholder);
-
-        $recommendationsPlaceholder
-        // TODO: do this in CSS
-            .css('height', anchorHeight)
-            .insertAfter(anchor);
-    }
-
-    /**
-     * Return normalized title for text
-     * Useful for normalizing categories and sections.
-     * @param {string} text
-     * @return {string} normalized text
-     */
-    function getNormalizedTitle(text) {
-        return mw.Title.newFromText(text).title;
-    }
-
-    /**
-     * Return normalized text for title
-     * @param {string} title
-     * @return {string} normalized text
-     */
-    function getNormalizedText(title) {
-        return mw.Title.newFromText(title).getMainText();
-    }
-
-    /**
-     * Get section recommendations for article
-     * @param {string[]} categories
-     * @return {jQuery.Promise}
-     * @return {Function} return.done
-     * @return {Object|false} return.done.data normalized section
-     * names and their relevance scores as key value pairs or false
-     */
-    function getSectionRecommendations(title) {
-        return $.getJSON(API_BASE_URL + title).then(function(response) {
-            return response;
-        });
-    }
-
 }(document, window.jQuery, window.mediaWiki, window.ve));
