@@ -5,7 +5,7 @@
 (function(d, $, mw, ve) {
     var API_BASE_URL = 'http://gapfinder.wmflabs.org/en.wikipedia.org/v1/section/article/',
         // # of recommendations to show
-        MAX_RECOMMENDATION_COUNT = 5,
+        MAX_RECOMMENDATION_COUNT = 10,
         recommendationPlaceholderId = 'gapfinder',
         anchor;
 
@@ -36,9 +36,7 @@
     function showSectionRecommendations() {
         var title = mw.config.get('wgPageName');
 
-        $.when(getSectionRecommendations(title),
-               getSections(title))
-            .then(getMissingSections)
+        getSectionRecommendations(title)
             .then(showTopMissingSections);
     }
 
@@ -62,6 +60,7 @@
         $('<b>Sections you can add</b>')
             .appendTo($recommendationsPlaceholder);
 
+        // TODO: only show if more than 0 top sections
         $('<ol></ol>').append(
             $.map(topSections, function (section) {
                 return '<li>' + getNormalizedText(section[0]) + '</li>';
@@ -69,29 +68,9 @@
         ).appendTo($recommendationsPlaceholder);
 
         $recommendationsPlaceholder
+        // TODO: do this in CSS
             .css('height', anchorHeight)
             .insertAfter(anchor);
-    }
-
-
-    /**
-     * Get missing sections
-     * @param {Object} sectionRecommendations
-     * @param {string[]} acrticleSections
-     * @return {Array<Array<string, number>>} missing sections
-     */
-    function getMissingSections (sectionRecommendations, articleSections) {
-        var result = [];
-        $.each(sectionRecommendations, function(i, section) {
-            if ($.inArray(section[0], articleSections) === -1) {
-                result.push(section);
-            }
-        });
-        result.sort(function(a, b) {
-            return b[1] - a[1];
-        });
-
-        return result;
     }
 
     /**
@@ -111,31 +90,6 @@
      */
     function getNormalizedText(title) {
         return mw.Title.newFromText(title).getMainText();
-    }
-
-    /**
-     * Get sections for title
-     * @param {string} title article title
-     * @return {jQuery.Promise}
-     * @return {Function} return.done
-     * @return {string[]|false} return.done.data normalized section
-     * names or false
-     */
-    function getSections(title) {
-        return new mw.Api()
-            .get({
-                action: 'parse',
-                page: getNormalizedTitle(title),
-                prop: 'sections'
-            })
-            .then(function(data) {
-                if (data && data.parse && data.parse.sections) {
-                    return $.map(data.parse.sections, function(section) {
-                        return section.line;
-                    });
-                }
-                return false;
-            });
     }
 
     /**
