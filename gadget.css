@@ -1,27 +1,29 @@
-.ve-init-mw-desktopArticleTarget-originalContent,
-.wikiEditor-ui,
-#gapfinder {
-    display: inline-block;
-    vertical-align: top;
+.ve-init-mw-articleTarget,
+.mw-editform {
+    display: flex;
+    flex-flow: row wrap;
+    height: 100%;
+}
+
+.ve-init-mw-desktopArticleTarget-toolbar {
+    flex: 1 100%;
 }
 
 .ve-init-mw-desktopArticleTarget-originalContent,
 .wikiEditor-ui {
-    width: 75% !important;
+    flex: 3;
 }
 #gapfinder {
-    background-color: #F8F9FA;
-    padding-top: 2em;
-    width: 25%;
-}
-.ve-init-target-visual #gapfinder {
-    margin-right: -1.5em;
-    margin-top: -1.5em;
-    float: right;
+    flex: 1;
 }
 
-#gapfinder > * {
-    padding-left: 10px;
+#gapfinder > div {
+    background-color: #F8F9FA;
+    padding: 1em;
+}
+.ve-init-mw-articleTarget #gapfinder > div {
+    margin: -1.2em -1.4em -1.5em 1em;
+    padding-top: 30px;
 }
 
 #gapfinder ol {

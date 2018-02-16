@@ -36,7 +36,7 @@
     function showSectionRecommendations() {
         var title = mw.config.get('wgPageName'),
             $recommendationsPlaceholder =  $('<div id="' + recommendationPlaceholderId + '">'),
-            anchorHeight = $(anchor).height() + 'px';
+            $content = $('<div>').appendTo($recommendationsPlaceholder);
 
         $.getJSON(API_BASE_URL + title)
             .then(function(sections) {
@@ -47,19 +47,16 @@
                 let topSections = sections.slice(0, MAX_RECOMMENDATION_COUNT);
 
                 $('<b>Sections you can add</b>')
-                    .appendTo($recommendationsPlaceholder);
+                    .appendTo($content);
 
                 // TODO: only show if more than 0 top sections
                 $('<ol></ol>').append(
                     $.map(topSections, function (section) {
                         return '<li>' + section[0] + '</li>';
                     })
-                ).appendTo($recommendationsPlaceholder);
+                ).appendTo($content);
 
-                $recommendationsPlaceholder
-                // TODO: do this in CSS
-                    .css('height', anchorHeight)
-                    .insertAfter(anchor);
+                $recommendationsPlaceholder.insertAfter(anchor);
             });
     }
 
