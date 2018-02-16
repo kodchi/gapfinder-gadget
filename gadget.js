@@ -40,11 +40,11 @@
 
         $.getJSON(API_BASE_URL + title)
             .then(function(sections) {
-                if (!sections.length) {
+                var topSections = sections.slice(0, MAX_RECOMMENDATION_COUNT);
+
+                if (!topSections.length) {
                     return;
                 }
-
-                let topSections = sections.slice(0, MAX_RECOMMENDATION_COUNT);
 
                 $('<b>Sections you can add</b>')
                     .appendTo($content);
@@ -57,6 +57,7 @@
                 ).appendTo($content);
 
                 $recommendationsPlaceholder.insertAfter(anchor);
+                $('body').addClass('gapfinder');
             });
     }
 
@@ -65,5 +66,6 @@
      */
     function hideSectionRecommendations() {
         $('#' + recommendationPlaceholderId).remove();
+        $('body').addClass('removeclass');
     }
 }(document, window.jQuery, window.mediaWiki, window.ve));
